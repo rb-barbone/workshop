@@ -24,6 +24,7 @@ import { UserMenu } from "./navbar-components/user-menu";
 const navigationLinks = [
   { href: "/dashboard", label: "Dashboard", icon: HomeIcon, active: true },
   { href: "/todo", label: "Todo", icon: LayersIcon },
+  { href: "/task", label: "Tasks", icon: LayersIcon },
 ];
 
 export default async function Navbar() {
