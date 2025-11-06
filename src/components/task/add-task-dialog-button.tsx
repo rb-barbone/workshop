@@ -7,11 +7,13 @@ import { useScopedI18n } from "@/shared/locales/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TaskFormDialog } from "@/components/task/task-form-dialog";
+import { useUserQuery } from "@/hooks/use-user";
 
 export function AddTaskDialogButton() {
   const t = useScopedI18n("task");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: currentUser } = useUserQuery();
 
   const [open, setOpen] = useState(false);
 
@@ -28,11 +30,13 @@ export function AddTaskDialogButton() {
     }),
   );
 
-  const onSave = (values: { title: string; description?: string }) => {
+  const onSave = (values: { title: string; description?: string; priority: "LOW" | "MEDIUM" | "HIGH" }) => {
     upsertMutation.mutate({
       id: crypto.randomUUID(),
       title: values.title,
       description: values.description,
+      priority: values.priority,
+      userId: currentUser?.id ?? null,
     });
   };
 

@@ -14,6 +14,8 @@ import { MoreHorizontal, Trash2, Pencil } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { EditTaskDialogButton } from "@/components/task/edit-task-dialog-button";
+import { AssignUserDialog } from "@/components/task/assign-user-dialog";
+import { AssignStatusDialog } from "@/components/task/assign-status-dialog";
 import { useState, memo } from "react";
 import {
   AlertDialog,
@@ -58,7 +60,7 @@ export function TaskTable(props: { filter?: { title?: string | null; description
     return (
       <TableBody>
         <TableRow>
-          <TableCell colSpan={4}>{t("loading")}</TableCell>
+          <TableCell colSpan={8}>{t("loading")}</TableCell>
         </TableRow>
       </TableBody>
     );
@@ -68,7 +70,7 @@ export function TaskTable(props: { filter?: { title?: string | null; description
     return (
       <TableBody>
         <TableRow>
-          <TableCell colSpan={4}>{t("empty")}</TableCell>
+          <TableCell colSpan={8}>{t("empty")}</TableCell>
         </TableRow>
       </TableBody>
     );
@@ -87,7 +89,7 @@ export function TaskTable(props: { filter?: { title?: string | null; description
   );
 }
 
-type RowTask = { id: string; title: string; description: string | null; status: string; priority: string };
+type RowTask = { id: string; title: string; description: string | null; userName: string | null; status: string; priority: string };
 
 const TaskRow = memo(function TaskRow(props: {
   task: RowTask;
@@ -96,6 +98,8 @@ const TaskRow = memo(function TaskRow(props: {
   const t = useScopedI18n("task");
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openAssign, setOpenAssign] = useState(false);
+  const [openAssignStatus, setOpenAssignStatus] = useState(false);
 
   const { task } = props;
 
@@ -104,6 +108,7 @@ const TaskRow = memo(function TaskRow(props: {
       <TableCell className="w-[120px] max-w-[120px] truncate font-mono text-xs">{task.id}</TableCell>
       <TableCell>{task.title}</TableCell>
       <TableCell>{task.description}</TableCell>
+      <TableCell>{task.userName ?? "-"}</TableCell>
       <TableCell>{task.status}</TableCell>
       <TableCell>{task.priority}</TableCell>
       <TableCell className="w-[60px] text-right">
@@ -117,6 +122,12 @@ const TaskRow = memo(function TaskRow(props: {
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenEdit(true); }}>
               <Pencil className="mr-2 h-4 w-4" /> {t("edit")}
             </DropdownMenuItem>
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenAssign(true); }}>
+              <Pencil className="mr-2 h-4 w-4" /> {t("assign")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenAssignStatus(true); }}>
+              <Pencil className="mr-2 h-4 w-4" /> {t("status")}
+            </DropdownMenuItem>
             <DropdownMenuItem className="text-red-600 focus:text-red-600" onSelect={(e) => { e.preventDefault(); setOpenDelete(true); }}>
               <Trash2 className="mr-2 h-4 w-4" /> {t("delete")}
             </DropdownMenuItem>
@@ -125,6 +136,12 @@ const TaskRow = memo(function TaskRow(props: {
 
         {/* Edit dialog rendered outside menu to avoid unmount on close */}
         <EditTaskDialogButton task={task} open={openEdit} onOpenChange={setOpenEdit} />
+
+        {/* Assign user dialog */}
+        <AssignUserDialog taskId={task.id} open={openAssign} onOpenChange={setOpenAssign} />
+
+        {/* Assign status dialog */}
+        <AssignStatusDialog taskId={task.id} open={openAssignStatus} onOpenChange={setOpenAssignStatus} />
 
         {/* Delete confirm dialog rendered outside menu */}
         <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>

@@ -1,8 +1,8 @@
 import type { DBClient } from "@/server/db";
-import type { getTaskByIdSchema, getTasksSchema, upsertTaskSchema } from "@/shared/validators/task.schema";
+import type { assignStatusToTaskSchema, assignUserToTaskSchema, getTaskByIdSchema, getTasksSchema, upsertTaskSchema } from "@/shared/validators/task.schema";
 import type z from "zod";
 import { getTaskByIdQuery, getTasksQuery } from "./queries";
-import { deleteTaskMutation, upsertTaskMutation } from "./mutations";
+import { deleteTaskMutation, upsertTaskMutation, assignUserToTaskMutation, assignStatusToTaskMutation } from "./mutations";
 
 
 export async function getTasks(
@@ -31,4 +31,18 @@ export async function deleteTask(
   params: z.infer<typeof getTaskByIdSchema>,
 ) {
   return await deleteTaskMutation(db, params);
+}
+
+export async function assignUserToTask(
+  db: DBClient,
+  params: z.infer<typeof assignUserToTaskSchema>,
+) {
+  return await assignUserToTaskMutation(db, params);
+}
+
+export async function assignStatusToTask(
+  db: DBClient,
+  params: z.infer<typeof assignStatusToTaskSchema>,
+) {
+  return await assignStatusToTaskMutation(db, params);
 }

@@ -7,9 +7,10 @@ import { useScopedI18n } from "@/shared/locales/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TaskFormDialog } from "@/components/task/task-form-dialog";
+import { useUserQuery } from "@/hooks/use-user";
 
 type EditTaskDialogButtonProps = {
-  task: { id: string; title: string; description: string | null };
+  task: { id: string; title: string; description: string | null; priority: string };
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -19,6 +20,7 @@ export function EditTaskDialogButton(props: EditTaskDialogButtonProps) {
   const t = useScopedI18n("task");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: currentUser } = useUserQuery();
 
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = props.open !== undefined && props.onOpenChange !== undefined;
@@ -38,11 +40,13 @@ export function EditTaskDialogButton(props: EditTaskDialogButtonProps) {
     }),
   );
 
-  const onSave = (values: { title: string; description?: string }) => {
+  const onSave = (values: { title: string; description?: string; priority: "LOW" | "MEDIUM" | "HIGH" }) => {
     upsertMutation.mutate({
       id: props.task.id,
       title: values.title,
       description: values.description,
+      priority: values.priority,
+      userId: null,
     });
   };
 
@@ -51,8 +55,7 @@ export function EditTaskDialogButton(props: EditTaskDialogButtonProps) {
       open={open}
       onOpenChange={setOpen}
       titleKey="edit"
-      trigger={props.children ?? <Button variant="ghost">{t("edit")}</Button>}
-      initialValues={{ title: props.task.title, description: props.task.description ?? "" }}
+      initialValues={{ title: props.task.title, description: props.task.description ?? "", priority: props.task.priority as any }}
       isSubmitting={upsertMutation.isPending}
       onSubmit={onSave}
     />

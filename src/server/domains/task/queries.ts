@@ -2,6 +2,7 @@
 
 import type { DBClient } from "@/server/db";
 import { task_table } from "@/server/db/schema/tasks";
+import { user } from "@/server/db/schema/auth-schema";
 import { TASK_STATUS, TASK_PRIORITIES } from "@/shared/types/tasks";
 import type { TaskStatus, TaskPriority } from "@/shared/types/tasks";
 import { and, eq, ilike } from "drizzle-orm";
@@ -37,7 +38,19 @@ export async function getTasksQuery(db: DBClient, filters: GetTasksRequest) {
     where.push(eq(task_table.priority, filters.priority));
   }
 
-  return await db.select().from(task_table).where(and(...where));
+  return await db
+    .select({
+      id: task_table.id,
+      userId: task_table.userId,
+      title: task_table.title,
+      description: task_table.description,
+      status: task_table.status,
+      priority: task_table.priority,
+      userName: user.name,
+    })
+    .from(task_table)
+    .leftJoin(user, eq(user.id, task_table.userId))
+    .where(and(...where));
 }
 
 export async function getTaskByIdQuery(db: DBClient, params: GetTaskByIdRequest) {
