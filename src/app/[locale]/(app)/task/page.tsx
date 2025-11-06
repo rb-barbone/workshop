@@ -32,20 +32,7 @@ export default async function TaskPage(props: TaskPageProps) {
                 <Search>Search</Search>
                 <AddTaskDialogButton />
             </div>
-            <Table className="w-full mx-2">
-                <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[120px]">{t("id")}</TableHead>
-                      <TableHead>{t("title")}</TableHead>
-                      <TableHead>{t("description")}</TableHead>
-                      <TableHead>{t("username")}</TableHead>
-                      <TableHead>{t("status")}</TableHead>
-                      <TableHead>{t("priority")}</TableHead>
-                      <TableHead className="w-[60px] text-right">{t("actions")}</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TaskTable filter={filter} />
-            </Table>
+            <TaskTable filter={filter}/>
           </div>
           
         </HydrateClient>
