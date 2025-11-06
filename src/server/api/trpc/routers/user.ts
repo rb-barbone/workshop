@@ -10,7 +10,7 @@ export const userRouter = createTRPCRouter({
   }),
 
   list: protectedProcedure.query(async ({ ctx: { db } }) => {
-    return await db.select({ id: user.id, name: user.name }).from(user);
+    return await db.select({ id: user.id, name: user.name, email: user.email }).from(user);
   }),
 
   update: protectedProcedure

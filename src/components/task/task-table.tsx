@@ -44,8 +44,7 @@ import {
 
 export function TaskTable(props: {
   filter?: {
-    title?: string | null;
-    description?: string | null;
+    search?: string | null;
     status?: string | null;
     priority?: string | null;
   };
@@ -56,8 +55,8 @@ export function TaskTable(props: {
 
   const { data, isLoading } = useQuery(
     trpc.tasks.get.queryOptions({
-      title: props.filter?.title ?? null,
-      description: props.filter?.description ?? null,
+      title: null,
+      description: null,
       status: (props.filter?.status as any) ?? null,
       priority: (props.filter?.priority as any) ?? null,
     })
@@ -79,9 +78,20 @@ export function TaskTable(props: {
   const [sortColumn, setSortColumn] = useState<keyof RowTask>("title");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  const search = props.filter?.search?.toLowerCase().trim();
+  const filteredData = useMemo(() => {
+    if (!data) return [] as RowTask[];
+    if (!search) return data as any;
+    return (data as any as RowTask[]).filter((t) =>
+      (t.title?.toLowerCase().includes(search as string) ?? false) ||
+      (t.description?.toLowerCase().includes(search as string) ?? false) ||
+      (t.userName?.toLowerCase().includes(search as string) ?? false)
+    );
+  }, [data, search]);
+
   const sortedData = useMemo(() => {
-    if (!data) return [];
-    const sorted = [...data].sort((a, b) => {
+    const base = filteredData as any[];
+    const sorted = [...base].sort((a, b) => {
       const aVal = a[sortColumn] ?? "";
       const bVal = b[sortColumn] ?? "";
       if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
@@ -89,7 +99,7 @@ export function TaskTable(props: {
       return 0;
     });
     return sorted;
-  }, [data, sortColumn, sortDirection]);
+  }, [filteredData, sortColumn, sortDirection]);
 
   const toggleSort = (column: keyof RowTask) => {
     if (column === sortColumn) {

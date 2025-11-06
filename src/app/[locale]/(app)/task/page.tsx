@@ -14,6 +14,7 @@ import { createLoader } from "nuqs/server";
 import { taskFilterParamsSchema } from "@/shared/validators/task.schema";
 import { TaskTable } from "@/components/task/task-table";
 import { AddTaskDialogButton } from "@/components/task/add-task-dialog-button";
+import { TaskFilter } from "@/components/task/task-filter";
 
 type TaskPageProps = {
     searchParams: Promise<SearchParams>;
@@ -28,13 +29,17 @@ export default async function TaskPage(props: TaskPageProps) {
     return (
         <HydrateClient>
           <div>
-            <div className="flex flex-raw justify-between p-4">
-                <Search>Search</Search>
+            <div className="flex flex-raw justify-between p-4 gap-4 items-center">
+                <TaskFilter />
                 <AddTaskDialogButton />
             </div>
-            <TaskTable filter={filter}/>
+            <TaskTable filter={{
+              status: (filter.status as any) ?? null,
+              priority: (filter.priority as any) ?? null,
+              search: (filter as any).search ?? null,
+            }}/>
           </div>
           
         </HydrateClient>
-      );
+    );
 }

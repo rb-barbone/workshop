@@ -97,6 +97,7 @@ export const assignStatusToTaskSchema = z.object({
 });
 
 export const taskFilterParamsSchema = {
+  search: parseAsString,
   title: parseAsString,
   description: parseAsString,
   status: parseAsStringEnum([...TASK_STATUS] as string[]),
