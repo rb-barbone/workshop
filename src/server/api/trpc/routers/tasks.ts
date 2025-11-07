@@ -1,6 +1,18 @@
-import { assignStatusToTaskSchema, assignUserToTaskSchema, getTaskByIdSchema, getTasksSchema, upsertTaskSchema } from "@/shared/validators/task.schema";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../init";
-import { deleteTask, getTasks, upsertTask, assignUserToTask, assignStatusToTask } from "@/server/domains/task/task-service";
+import {
+  assignStatusToTask,
+  assignUserToTask,
+  deleteTask,
+  getTasks,
+  upsertTask,
+} from "@/server/domains/task/task-service";
+import {
+  assignStatusToTaskSchema,
+  assignUserToTaskSchema,
+  getTaskByIdSchema,
+  getTasksSchema,
+  upsertTaskSchema,
+} from "@/shared/validators/task.schema";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../init";
 
 export const tasksRouter = createTRPCRouter({
   get: publicProcedure
@@ -33,4 +45,3 @@ export const tasksRouter = createTRPCRouter({
       return await assignStatusToTask(db, input);
     }),
 });
-

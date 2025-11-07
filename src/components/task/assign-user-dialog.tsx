@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useTRPC } from "@/shared/helpers/trpc/client";
 import { useScopedI18n } from "@/shared/locales/client";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
 type AssignUserDialogProps = {
   taskId: string;
@@ -47,7 +53,7 @@ export function AssignUserDialog(props: AssignUserDialogProps) {
       onError: ({ message }) => {
         toast.error(message ?? t("toast.update_error"));
       },
-    })
+    }),
   );
 
   const handleConfirm = () => {
@@ -93,5 +99,3 @@ export function AssignUserDialog(props: AssignUserDialogProps) {
     </Dialog>
   );
 }
-
-

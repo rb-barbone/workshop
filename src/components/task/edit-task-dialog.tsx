@@ -5,8 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { TaskFormDialog } from "@/components/task/task-form-dialog";
-import { Button } from "@/components/ui/button";
-import { useUserQuery } from "@/hooks/use-user";
 import { useTRPC } from "@/shared/helpers/trpc/client";
 import { useScopedI18n } from "@/shared/locales/client";
 
@@ -26,7 +24,6 @@ export function EditTaskDialog(props: EditTaskDialogProps) {
   const t = useScopedI18n("task");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { data: currentUser } = useUserQuery();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -88,7 +85,7 @@ export function EditTaskDialog(props: EditTaskDialogProps) {
       initialValues={{
         title: props.task.title,
         description: props.task.description ?? "",
-        priority: props.task.priority as any,
+        priority: props.task.priority as "LOW" | "MEDIUM" | "HIGH",
       }}
       isSubmitting={upsertMutation.isPending}
       onSubmit={onSave}

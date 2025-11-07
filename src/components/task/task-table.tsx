@@ -1,29 +1,13 @@
 "use client";
 
-import { useTRPC } from "@/shared/helpers/trpc/client";
-import { useScopedI18n } from "@/shared/locales/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Trash2, Pencil, ArrowUpDown } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { memo, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { EditTaskDialogButton } from "@/components/task/edit-task-dialog-button";
-import { AssignUserDialog } from "@/components/task/assign-user-dialog";
 import { AssignStatusDialog } from "@/components/task/assign-status-dialog";
-import { useState, useMemo, memo } from "react";
+import { AssignUserDialog } from "@/components/task/assign-user-dialog";
+import { EditTaskDialog } from "@/components/task/edit-task-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -41,12 +32,23 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useTRPC } from "@/shared/helpers/trpc/client";
+import { useScopedI18n } from "@/shared/locales/client";
+import type { TaskPriority, TaskStatus } from "@/shared/types/tasks";
 
 export function TaskTable(props: {
   filter?: {
     search?: string | null;
-    status?: string | null;
-    priority?: string | null;
+    status?: TaskStatus | null;
+    priority?: TaskPriority | null;
   };
 }) {
   const t = useScopedI18n("task");
@@ -57,9 +59,9 @@ export function TaskTable(props: {
     trpc.tasks.get.queryOptions({
       title: null,
       description: null,
-      status: (props.filter?.status as any) ?? null,
-      priority: (props.filter?.priority as any) ?? null,
-    })
+      status: props.filter?.status ?? null,
+      priority: props.filter?.priority ?? null,
+    }),
   );
 
   const deleteMutation = useMutation(
@@ -71,7 +73,7 @@ export function TaskTable(props: {
       onError: ({ message }) => {
         toast.error(message ?? t("toast.delete_error"));
       },
-    })
+    }),
   );
 
   // === SORTING ===
@@ -79,18 +81,19 @@ export function TaskTable(props: {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const search = props.filter?.search?.toLowerCase().trim();
-  const filteredData = useMemo(() => {
+  const filteredData: RowTask[] = useMemo(() => {
     if (!data) return [] as RowTask[];
-    if (!search) return data as any;
-    return (data as any as RowTask[]).filter((t) =>
-      (t.title?.toLowerCase().includes(search as string) ?? false) ||
-      (t.description?.toLowerCase().includes(search as string) ?? false) ||
-      (t.userName?.toLowerCase().includes(search as string) ?? false)
+    if (!search) return data;
+    return (data as RowTask[]).filter(
+      (t) =>
+        (t.title?.toLowerCase().includes(search as string) ?? false) ||
+        (t.description?.toLowerCase().includes(search as string) ?? false) ||
+        (t.userName?.toLowerCase().includes(search as string) ?? false),
     );
   }, [data, search]);
 
   const sortedData = useMemo(() => {
-    const base = filteredData as any[];
+    const base = filteredData;
     const sorted = [...base].sort((a, b) => {
       const aVal = a[sortColumn] ?? "";
       const bVal = b[sortColumn] ?? "";
@@ -114,13 +117,18 @@ export function TaskTable(props: {
   const [page, setPage] = useState(1);
   const pageSize = 5;
   const totalPages = Math.ceil(sortedData.length / pageSize);
-  const paginatedData = sortedData.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedData = sortedData.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
 
   // === RENDER ===
   if (isLoading) {
     return (
       <div className="p-6">
-        <p className="text-center text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="text-center text-sm text-muted-foreground">
+          {t("loading")}
+        </p>
       </div>
     );
   }
@@ -128,7 +136,9 @@ export function TaskTable(props: {
   if (!data || data.length === 0) {
     return (
       <div className="p-6">
-        <p className="text-center text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-center text-sm text-muted-foreground">
+          {t("empty")}
+        </p>
       </div>
     );
   }
@@ -138,20 +148,35 @@ export function TaskTable(props: {
       <Table className="w-full border rounded-xl shadow-sm">
         <TableHeader>
           <TableRow>
-            <TableHead onClick={() => toggleSort("id")} className="cursor-pointer">
+            <TableHead
+              onClick={() => toggleSort("id")}
+              className="cursor-pointer"
+            >
               ID <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
-            <TableHead onClick={() => toggleSort("title")} className="cursor-pointer">
+            <TableHead
+              onClick={() => toggleSort("title")}
+              className="cursor-pointer"
+            >
               {t("title")} <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
             <TableHead>{t("description")}</TableHead>
-            <TableHead onClick={() => toggleSort("userName")} className="cursor-pointer">
+            <TableHead
+              onClick={() => toggleSort("userName")}
+              className="cursor-pointer"
+            >
               {t("username")} <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
-            <TableHead onClick={() => toggleSort("status")} className="cursor-pointer">
+            <TableHead
+              onClick={() => toggleSort("status")}
+              className="cursor-pointer"
+            >
               {t("status")} <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
-            <TableHead onClick={() => toggleSort("priority")} className="cursor-pointer">
+            <TableHead
+              onClick={() => toggleSort("priority")}
+              className="cursor-pointer"
+            >
               {t("priority")} <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
             <TableHead className="text-right">{t("actions")}</TableHead>
@@ -213,12 +238,23 @@ const TaskRow = memo(function TaskRow(props: {
   const [openAssignStatus, setOpenAssignStatus] = useState(false);
 
   const { task } = props;
+  const searchParams = useSearchParams();
+
+  // Sync open state with ?id= in the URL to avoid flip-flopping on navigation
+  useEffect(() => {
+    const shouldBeOpen = searchParams.get("id") === task.id;
+    setOpenEdit(shouldBeOpen);
+  }, [searchParams, task.id]);
 
   return (
     <TableRow>
-      <TableCell className="w-[120px] truncate font-mono text-xs">{task.id}</TableCell>
+      <TableCell className="w-[120px] truncate font-mono text-xs">
+        {task.id}
+      </TableCell>
       <TableCell>{task.title}</TableCell>
-      <TableCell className="max-w-[250px] truncate">{task.description}</TableCell>
+      <TableCell className="max-w-[250px] truncate">
+        {task.description}
+      </TableCell>
       <TableCell>{task.userName ?? "-"}</TableCell>
       <TableCell>{task.status}</TableCell>
       <TableCell>{task.priority}</TableCell>
@@ -248,9 +284,21 @@ const TaskRow = memo(function TaskRow(props: {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <EditTaskDialogButton task={task} open={openEdit} onOpenChange={setOpenEdit} />
-        <AssignUserDialog taskId={task.id} open={openAssign} onOpenChange={setOpenAssign} />
-        <AssignStatusDialog taskId={task.id} open={openAssignStatus} onOpenChange={setOpenAssignStatus} />
+        <EditTaskDialog
+          task={task}
+          open={openEdit}
+          onOpenChange={setOpenEdit}
+        />
+        <AssignUserDialog
+          taskId={task.id}
+          open={openAssign}
+          onOpenChange={setOpenAssign}
+        />
+        <AssignStatusDialog
+          taskId={task.id}
+          open={openAssignStatus}
+          onOpenChange={setOpenAssignStatus}
+        />
 
         <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
           <AlertDialogContent>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,13 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { useScopedI18n } from "@/shared/locales/client";
-import { useEffect, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TASK_PRIORITIES, type TaskPriority } from "@/shared/types/tasks";
 
 export type TaskFormValues = {
@@ -26,7 +32,7 @@ export type TaskFormValues = {
 export function TaskFormDialog(props: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  titleKey: string; // i18n key for dialog title
+  titleKey: string;
   trigger?: React.ReactNode;
   initialValues?: TaskFormValues;
   isSubmitting?: boolean;
@@ -34,8 +40,12 @@ export function TaskFormDialog(props: {
 }) {
   const t = useScopedI18n("task");
   const [title, setTitle] = useState(props.initialValues?.title ?? "");
-  const [description, setDescription] = useState(props.initialValues?.description ?? "");
-  const [priority, setPriority] = useState<TaskPriority>(props.initialValues?.priority ?? "LOW");
+  const [description, setDescription] = useState(
+    props.initialValues?.description ?? "",
+  );
+  const [priority, setPriority] = useState<TaskPriority>(
+    props.initialValues?.priority ?? "LOW",
+  );
 
   useEffect(() => {
     if (props.open) {
@@ -43,19 +53,31 @@ export function TaskFormDialog(props: {
       setDescription(props.initialValues?.description ?? "");
       setPriority((props.initialValues?.priority as TaskPriority) ?? "LOW");
     }
-  }, [props.open, props.initialValues?.title, props.initialValues?.description]);
+  }, [
+    props.open,
+    props.initialValues?.title,
+    props.initialValues?.description,
+  ]);
 
   const handleSubmit = () => {
     if (!title.trim()) return;
-    props.onSubmit({ title: title.trim(), description: description.trim() || undefined, priority });
+    props.onSubmit({
+      title: title.trim(),
+      description: description.trim() || undefined,
+      priority,
+    });
   };
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      {props.trigger ? <DialogTrigger asChild>{props.trigger}</DialogTrigger> : null}
+      {props.trigger ? (
+        <DialogTrigger asChild>{props.trigger}</DialogTrigger>
+      ) : null}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t(props.titleKey as any)}</DialogTitle>
+          <DialogTitle>
+            {t(props.titleKey as Parameters<typeof t>[0])}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -78,13 +100,18 @@ export function TaskFormDialog(props: {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="task-priority">{t("priority")}</Label>
-            <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
+            <Select
+              value={priority}
+              onValueChange={(v) => setPriority(v as TaskPriority)}
+            >
               <SelectTrigger id="task-priority">
                 <SelectValue placeholder={t("priority")} />
               </SelectTrigger>
               <SelectContent>
                 {TASK_PRIORITIES.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -99,5 +126,3 @@ export function TaskFormDialog(props: {
     </Dialog>
   );
 }
-
-

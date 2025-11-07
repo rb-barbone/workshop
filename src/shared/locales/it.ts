@@ -57,7 +57,7 @@ export default {
   // task feature
   "task.title": "Task",
   "task.subtitle": "Gestisci i task",
-  "task.addTask" : "Aggiungi task",
+  "task.addTask": "Aggiungi task",
   "task.id": "ID",
   "task.description": "Descrizione",
   "task.username": "Utente",

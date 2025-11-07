@@ -84,15 +84,24 @@ export const upsertTaskSchema = z.object({
     description: "The ID of the user (UUID)",
     example: "123e4567-e89b-12d3-a456-426614174000",
   }),
-}); 
+});
 
 export const assignUserToTaskSchema = z.object({
-  id: z.guid().openapi({ description: "Task ID", example: "123e4567-e89b-12d3-a456-426614174000" }),
-  userId: z.uuid().nullable().openapi({ description: "User ID (UUID) or null per rimuovere" }),
+  id: z.guid().openapi({
+    description: "Task ID",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+  }),
+  userId: z
+    .uuid()
+    .nullable()
+    .openapi({ description: "User ID (UUID) or null per rimuovere" }),
 });
 
 export const assignStatusToTaskSchema = z.object({
-  id: z.guid().openapi({ description: "Task ID", example: "123e4567-e89b-12d3-a456-426614174000" }),
+  id: z.guid().openapi({
+    description: "Task ID",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+  }),
   status: z.enum(TASK_STATUS).openapi({ description: "Nuovo stato del task" }),
 });
 
@@ -103,4 +112,3 @@ export const taskFilterParamsSchema = {
   status: parseAsStringEnum([...TASK_STATUS] as string[]),
   priority: parseAsStringEnum([...TASK_PRIORITIES] as string[]),
 };
-

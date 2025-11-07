@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useScopedI18n } from "@/shared/locales/client";
 import { TASK_PRIORITIES, TASK_STATUS } from "@/shared/types/tasks";
 
@@ -55,7 +61,9 @@ export function TaskFilter() {
           </SelectTrigger>
           <SelectContent>
             {TASK_STATUS.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -67,15 +75,17 @@ export function TaskFilter() {
           </SelectTrigger>
           <SelectContent>
             {TASK_PRIORITIES.map((p) => (
-              <SelectItem key={p} value={p}>{p}</SelectItem>
+              <SelectItem key={p} value={p}>
+                {p}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      <Button variant="outline" onClick={reset}>{t("cancel")}</Button>
+      <Button variant="outline" onClick={reset}>
+        {t("cancel")}
+      </Button>
       <Button onClick={apply}>{t("confirm")}</Button>
     </div>
   );
 }
-
-

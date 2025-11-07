@@ -78,5 +78,5 @@ export default {
   "task.toast.updated": "Task updated",
   "task.toast.update_error": "Failed to update task",
   "task.toast.deleted": "Task deleted",
-  "task.toast.delete_error": "Failed to delete task"
+  "task.toast.delete_error": "Failed to delete task",
 } as const;

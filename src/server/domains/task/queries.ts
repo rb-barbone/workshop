@@ -1,11 +1,10 @@
 "server-only";
 
-import type { DBClient } from "@/server/db";
-import { task_table } from "@/server/db/schema/tasks";
-import { user } from "@/server/db/schema/auth-schema";
-import { TASK_STATUS, TASK_PRIORITIES } from "@/shared/types/tasks";
-import type { TaskStatus, TaskPriority } from "@/shared/types/tasks";
 import { and, eq, ilike } from "drizzle-orm";
+import type { DBClient } from "@/server/db";
+import { user } from "@/server/db/schema/auth-schema";
+import { task_table } from "@/server/db/schema/tasks";
+import type { TaskPriority, TaskStatus } from "@/shared/types/tasks";
 
 type GetTasksRequest = {
   title?: string | null;
@@ -53,6 +52,9 @@ export async function getTasksQuery(db: DBClient, filters: GetTasksRequest) {
     .where(and(...where));
 }
 
-export async function getTaskByIdQuery(db: DBClient, params: GetTaskByIdRequest) {
+export async function getTaskByIdQuery(
+  db: DBClient,
+  params: GetTaskByIdRequest,
+) {
   return await db.select().from(task_table).where(eq(task_table.id, params.id));
 }

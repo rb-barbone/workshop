@@ -1,10 +1,9 @@
+import { eq } from "drizzle-orm";
+import type z from "zod";
 import type { DBClient } from "@/server/db";
 import { task_table } from "@/server/db/schema/tasks";
 import type { TaskPriority, TaskStatus } from "@/shared/types/tasks";
-import type { getTaskByIdSchema, upsertTaskSchema } from "@/shared/validators/task.schema";
-import { eq } from "drizzle-orm";
-import type z from "zod";
-
+import type { getTaskByIdSchema } from "@/shared/validators/task.schema";
 
 type UpsertTaskParams = {
   id?: string;
@@ -17,7 +16,7 @@ type UpsertTaskParams = {
 
 export async function upsertTaskMutation(
   db: DBClient,
-  params: UpsertTaskParams, 
+  params: UpsertTaskParams,
 ) {
   const { id, userId, ...rest } = params;
 
@@ -30,7 +29,7 @@ export async function upsertTaskMutation(
     priority: rest.priority!,
   } as typeof task_table.$inferInsert;
   if (userId !== undefined && userId !== null) {
-    insertValues.userId = userId as any;
+    insertValues.userId = userId;
   }
 
   const [task] = await db
@@ -52,7 +51,6 @@ export async function deleteTaskMutation(
   db: DBClient,
   params: z.infer<typeof getTaskByIdSchema>,
 ) {
-
   const [result] = await db
     .delete(task_table)
     .where(eq(task_table.id, params.id))
@@ -69,7 +67,10 @@ export async function deleteTaskMutation(
 
 type AssignUserParams = { id: string; userId: string | null };
 
-export async function assignUserToTaskMutation(db: DBClient, params: AssignUserParams) {
+export async function assignUserToTaskMutation(
+  db: DBClient,
+  params: AssignUserParams,
+) {
   const [result] = await db
     .update(task_table)
     .set({ userId: params.userId })
@@ -84,7 +85,10 @@ export async function assignUserToTaskMutation(db: DBClient, params: AssignUserP
 
 type AssignStatusParams = { id: string; status: TaskStatus };
 
-export async function assignStatusToTaskMutation(db: DBClient, params: AssignStatusParams) {
+export async function assignStatusToTaskMutation(
+  db: DBClient,
+  params: AssignStatusParams,
+) {
   const [result] = await db
     .update(task_table)
     .set({ status: params.status })
