@@ -23,7 +23,8 @@ import { UserMenu } from "./navbar-components/user-menu";
 // Navigation links with icons for desktop icon-only navigation
 const navigationLinks = [
   { href: "/dashboard", label: "Dashboard", icon: HomeIcon, active: true },
-  { href: "/todo", label: "Todo", icon: LayersIcon },
+  { href: "/task", label: "Tasks", icon: LayersIcon },
+  { href: "/users", label: "Users", icon: LayersIcon },
 ];
 
 export default async function Navbar() {
