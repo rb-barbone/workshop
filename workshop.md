@@ -236,6 +236,9 @@ L'implementazione frontend utilizza una struttura modulare con componenti riutil
 
 3. **Form Components**
    - **`task-form-dialog.tsx`**: Form riutilizzabile per creare/modificare task
+     - Utilizza `react-hook-form` con `zodResolver` per la validazione
+     - Schema Zod condiviso (`taskFormSchema`) per validazione lato client
+     - Gestione errori con `FieldError` component
    - **`add-task-dialog.tsx`**: Wrapper per creare nuovi task
    - **`edit-task-dialog.tsx`**: Wrapper per modificare task esistenti
 

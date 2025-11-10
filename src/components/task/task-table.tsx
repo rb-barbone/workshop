@@ -55,20 +55,15 @@ export function TaskTable(props: {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery(
-    trpc.tasks.get.queryOptions({
-      title: null,
-      description: null,
-      status: props.filter?.status ?? null,
-      priority: props.filter?.priority ?? null,
-    }),
-  );
+  const { data, isLoading } = useQuery(trpc.tasks.get.queryOptions({}));
 
   const deleteMutation = useMutation(
     trpc.tasks.delete.mutationOptions({
       onSuccess: async () => {
         toast.success(t("toast.deleted"));
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({
+          queryKey: trpc.tasks.get.queryKey(),
+        });
       },
       onError: ({ message }) => {
         toast.error(message ?? t("toast.delete_error"));
@@ -227,7 +222,7 @@ type RowTask = {
   priority: string;
 };
 
-const TaskRow = memo(function TaskRow(props: {
+const TaskRow = function TaskRow(props: {
   task: RowTask;
   onDelete: (id: string) => void;
 }) {
@@ -324,4 +319,4 @@ const TaskRow = memo(function TaskRow(props: {
       </TableCell>
     </TableRow>
   );
-});
+};

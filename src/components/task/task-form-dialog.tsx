@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import type z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,13 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useScopedI18n } from "@/shared/locales/client";
-import { TASK_PRIORITIES, type TaskPriority } from "@/shared/types/tasks";
+import { TASK_PRIORITIES } from "@/shared/types/tasks";
+import { taskFormSchema } from "@/shared/validators/task.schema";
 
-export type TaskFormValues = {
-  title: string;
-  description?: string;
-  priority: TaskPriority;
-};
+export type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 export function TaskFormDialog(props: {
   open: boolean;
@@ -39,32 +40,39 @@ export function TaskFormDialog(props: {
   onSubmit: (values: TaskFormValues) => void;
 }) {
   const t = useScopedI18n("task");
-  const [title, setTitle] = useState(props.initialValues?.title ?? "");
-  const [description, setDescription] = useState(
-    props.initialValues?.description ?? "",
-  );
-  const [priority, setPriority] = useState<TaskPriority>(
-    props.initialValues?.priority ?? "LOW",
-  );
 
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: {
+      title: props.initialValues?.title ?? "",
+      description: props.initialValues?.description ?? "",
+      priority: props.initialValues?.priority ?? "LOW",
+    },
+  });
+
+  // Reset form quando il dialog si apre o cambiano i valori iniziali
   useEffect(() => {
     if (props.open) {
-      setTitle(props.initialValues?.title ?? "");
-      setDescription(props.initialValues?.description ?? "");
-      setPriority((props.initialValues?.priority as TaskPriority) ?? "LOW");
+      form.reset({
+        title: props.initialValues?.title ?? "",
+        description: props.initialValues?.description ?? "",
+        priority: props.initialValues?.priority ?? "LOW",
+      });
     }
   }, [
     props.open,
     props.initialValues?.title,
     props.initialValues?.description,
+    props.initialValues?.priority,
+    form,
   ]);
 
-  const handleSubmit = () => {
-    if (!title.trim()) return;
+  const handleSubmit = (values: TaskFormValues) => {
+    // Clean up empty strings to undefined for description
     props.onSubmit({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      priority,
+      ...values,
+      description: values.description?.trim() || undefined,
+      title: values.title.trim(),
     });
   };
 
@@ -79,49 +87,75 @@ export function TaskFormDialog(props: {
             {t(props.titleKey as Parameters<typeof t>[0])}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="task-title">{t("title")}</Label>
-            <Input
-              id="task-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("title")}
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
+          <div className="grid gap-4 py-4">
+            <Controller
+              name="title"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <Label htmlFor="task-title">{t("title")}</Label>
+                  <Input
+                    id="task-title"
+                    {...field}
+                    aria-invalid={fieldState.invalid}
+                    placeholder={t("title")}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <Label htmlFor="task-description">{t("description")}</Label>
+                  <Textarea
+                    id="task-description"
+                    {...field}
+                    aria-invalid={fieldState.invalid}
+                    placeholder={t("description")}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="priority"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <Label htmlFor="task-priority">{t("priority")}</Label>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="task-priority">
+                      <SelectValue placeholder={t("priority")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TASK_PRIORITIES.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {p}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="task-description">{t("description")}</Label>
-            <Textarea
-              id="task-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("description")}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="task-priority">{t("priority")}</Label>
-            <Select
-              value={priority}
-              onValueChange={(v) => setPriority(v as TaskPriority)}
-            >
-              <SelectTrigger id="task-priority">
-                <SelectValue placeholder={t("priority")} />
-              </SelectTrigger>
-              <SelectContent>
-                {TASK_PRIORITIES.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit} disabled={props.isSubmitting}>
-            {t("save")}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="submit" disabled={props.isSubmitting}>
+              {t("save")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -105,6 +105,25 @@ export const assignStatusToTaskSchema = z.object({
   status: z.enum(TASK_STATUS).openapi({ description: "Nuovo stato del task" }),
 });
 
+export const taskFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(256, "Title must be at most 256 characters")
+    .openapi({
+      description: "The title of the task",
+      example: "Task 1",
+    }),
+  description: z.string().optional().openapi({
+    description: "The description of the task",
+    example: "Description of the task",
+  }),
+  priority: z.enum(TASK_PRIORITIES).openapi({
+    description: "The priority of the task",
+    example: "LOW",
+  }),
+});
+
 export const taskFilterParamsSchema = {
   search: parseAsString,
   title: parseAsString,

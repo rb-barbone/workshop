@@ -12,7 +12,7 @@ import {
   getTasksSchema,
   upsertTaskSchema,
 } from "@/shared/validators/task.schema";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../init";
+import { createTRPCRouter, publicProcedure } from "../init";
 
 export const tasksRouter = createTRPCRouter({
   get: publicProcedure
@@ -33,13 +33,13 @@ export const tasksRouter = createTRPCRouter({
       return await deleteTask(db, input);
     }),
 
-  assignUser: protectedProcedure
+  assignUser: publicProcedure
     .input(assignUserToTaskSchema)
     .mutation(async ({ ctx: { db }, input }) => {
       return await assignUserToTask(db, input);
     }),
 
-  assignStatus: protectedProcedure
+  assignStatus: publicProcedure
     .input(assignStatusToTaskSchema)
     .mutation(async ({ ctx: { db }, input }) => {
       return await assignStatusToTask(db, input);

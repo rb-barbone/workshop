@@ -42,7 +42,9 @@ export function AssignStatusDialog(props: AssignStatusDialogProps) {
     trpc.tasks.assignStatus.mutationOptions({
       onSuccess: async () => {
         toast.success(t("toast.updated"));
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({
+          queryKey: trpc.tasks.get.queryKey({}),
+        });
         props.onOpenChange(false);
       },
       onError: ({ message }) => toast.error(message ?? t("toast.update_error")),

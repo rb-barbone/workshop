@@ -22,7 +22,9 @@ export function AddTaskDialog() {
       onSuccess: async () => {
         toast.success(t("toast.created"));
         setOpen(false);
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({
+          queryKey: trpc.tasks.get.queryKey({}),
+        });
       },
       onError: ({ message }) => {
         toast.error(message ?? t("toast.create_error"));
